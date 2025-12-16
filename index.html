@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍪 Печенька с предсказанием</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #ffe8d6 0%, #ffd7ba 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #5d4037;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: #8d6e63;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #a1887f;
+            opacity: 0.8;
+        }
+
+        /* Анимация падающей печеньки */
+        .cookie-wrapper {
+            position: relative;
+            height: 300px;
+            margin-bottom: 40px;
+        }
+
+        .cookie-container {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .cookie-container:hover {
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        .cookie {
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 30% 30%, #f4a460 0%, #d2691e 70%),
+                radial-gradient(circle at 70% 70%, #cd853f 0%, #8b4513 70%);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 
+                0 15px 35px rgba(139, 69, 19, 0.3),
+                inset 0 -10px 20px rgba(0,0,0,0.2),
+                inset 0 10px 20px rgba(255,255,255,0.3);
+            border: 8px solid #8b4513;
+            animation: float 4s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0) rotate(0deg); 
+            }
+            25% { 
+                transform: translateY(-15px) rotate(5deg); 
+            }
+            75% { 
+                transform: translateY(10px) rotate(-3deg); 
+            }
+        }
+
+        /* Текстура печеньки */
+        .cookie::before {
+            content: '';
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            background: 
+                radial-gradient(circle at 20% 20%, transparent 25%, rgba(139, 69, 19, 0.1) 25%),
+                radial-gradient(circle at 60% 40%, transparent 35%, rgba(139, 69, 19, 0.1) 35%),
+                radial-gradient(circle at 80% 70%, transparent 25%, rgba(139, 69, 19, 0.1) 25%),
+                radial-gradient(circle at 40% 80%, transparent 30%, rgba(139, 69, 19, 0.1) 30%);
+            border-radius: 50%;
+            top: 5%;
+            left: 5%;
+        }
+
+        /* Шоколадные чипсы */
+        .chip {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: 
+                radial-gradient(circle at 30% 30%, #5d4037 0%, #3e2723 100%);
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .chip-1 { top: 25%; left: 25%; }
+        .chip-2 { top: 35%; left: 65%; }
+        .chip-3 { top: 60%; left: 30%; }
+        .chip-4 { top: 65%; left: 60%; }
+        .chip-5 { top: 45%; left: 45%; }
+
+        /* Трещины на печеньке */
+        .crack {
+            position: absolute;
+            background: rgba(139, 69, 19, 0.6);
+            border-radius: 2px;
+            z-index: 3;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .crack-1 {
+            width: 80px;
+            height: 4px;
+            top: 50%;
+            left: 10px;
+            transform: rotate(15deg);
+        }
+
+        .crack-2 {
+            width: 70px;
+            height: 4px;
+            top: 40%;
+            left: 110px;
+            transform: rotate(-10deg);
+        }
+
+        /* Крошки от печеньки */
+        .crumbs {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        .crumb {
+            position: absolute;
+            background: #d2691e;
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        /* Бумажка с предсказанием - СНАЧАЛА ВНУТРИ ПЕЧЕНЬКИ */
+        .fortune-paper {
+            position: absolute;
+            width: 160px;
+            height: 60px;
+            background: linear-gradient(to bottom, #fff8dc, #fffaf0);
+            border-radius: 8px;
+            box-shadow: 
+                inset 0 0 0 1px #ffd54f,
+                0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #5d4037;
+            text-align: center;
+            line-height: 1.3;
+            z-index: 1;
+            overflow: hidden;
+            
+            /* Изначально скрыта внутри печеньки */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            opacity: 0;
+            
+            /* Стили для "сложенной" бумажки */
+            clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+            transition: none;
+        }
+
+        /* Конверт для бумажки */
+        .paper-fold {
+            position: absolute;
+            width: 100%;
+            height: 20px;
+            background: #ffecb3;
+            top: -10px;
+            left: 0;
+            border-radius: 8px 8px 0 0;
+            z-index: 2;
+        }
+
+        /* Когда печенька открывается - бумажка выходит */
+        .cookie-container.opened .fortune-paper {
+            animation: paperUnfold 2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes paperUnfold {
+            0% {
+                /* Внутри печеньки */
+                top: 50%;
+                left: 50%;
+                width: 160px;
+                height: 60px;
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+                clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+            }
+            20% {
+                /* Начинает появляться */
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            40% {
+                /* Выходит из печеньки */
+                top: -50px;
+                transform: translateX(-50%) scale(1.1);
+                height: 70px;
+            }
+            60% {
+                /* Разворачивается вверх */
+                top: -100px;
+                height: 80px;
+                width: 180px;
+                transform: translateX(-50%) scale(1.15);
+            }
+            80% {
+                /* Полностью разворачивается */
+                top: -120px;
+                height: 100px;
+                width: 200px;
+                transform: translateX(-50%) scale(1.2);
+                clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+            }
+            100% {
+                /* Финальное положение над печенькой */
+                top: -150px;
+                width: 220px;
+                height: 120px;
+                transform: translateX(-50%) scale(1.1);
+                opacity: 1;
+                clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+                box-shadow: 
+                    0 10px 25px rgba(0,0,0,0.2),
+                    inset 0 0 0 2px #ffd54f;
+            }
+        }
+
+        /* Анимация трещин при открытии */
+        .cookie-container.opened .crack {
+            opacity: 1;
+        }
+
+        /* Анимация крошек */
+        .cookie-container.opened .crumb {
+            animation: crumbFly 1.5s ease-out forwards;
+        }
+
+        @keyframes crumbFly {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: 
+                    translate(var(--tx, 50px), var(--ty, 50px))
+                    scale(0.3);
+            }
+        }
+
+        /* Кнопка "Еще раз" */
+        .btn-restart {
+            background: linear-gradient(to bottom, #8d6e63, #6d4c41);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .btn-restart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-restart.show {
+            display: inline-block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Инструкция */
+        .instruction {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #8d6e63;
+            opacity: 0.7;
+        }
+
+        /* Подсветка печеньки при наведении */
+        .cookie-container:hover .cookie {
+            box-shadow: 
+                0 20px 40px rgba(139, 69, 19, 0.4),
+                inset 0 -10px 20px rgba(0,0,0,0.2),
+                inset 0 10px 20px rgba(255,255,255,0.4);
+        }
+
+        /* Пульсация для привлечения внимания */
+        @keyframes pulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
+        }
+
+        .cookie-container.pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 480px) {
+            .cookie-container {
+                width: 180px;
+                height: 180px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            @keyframes paperUnfold {
+                100% {
+                    top: -130px;
+                    width: 180px;
+                    height: 100px;
+                    font-size: 12px;
+                }
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍪 Печенька с предсказанием</h1>
+            <p class="subtitle">Нажми на печеньку, чтобы узнать свою судьбу</p>
+        </div>
+
+        <div class="cookie-wrapper">
+            <div class="cookie-container" id="cookieContainer">
+                <div class="cookie">
+                    <!-- Шоколадные чипсы -->
+                    <div class="chip chip-1"></div>
+                    <div class="chip chip-2"></div>
+                    <div class="chip chip-3"></div>
+                    <div class="chip chip-4"></div>
+                    <div class="chip chip-5"></div>
+                    
+                    <!-- Трещины -->
+                    <div class="crack crack-1"></div>
+                    <div class="crack crack-2"></div>
+                    
+                    <!-- Крошки -->
+                    <div class="crumbs" id="crumbs"></div>
+                    
+                    <!-- Бумажка с предсказанием -->
+                    <div class="fortune-paper" id="fortunePaper">
+                        <div class="paper-fold"></div>
+                        <span id="fortuneText"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-restart" id="restartBtn">✨ Еще печеньку!</button>
+        
+        <p class="instruction">Нажми на печеньку, чтобы открыть её</p>
+    </div>
+
+    <script>
+        // Список предсказаний
+        const fortunes = [
+            "Сегодня тебя ждёт удача!",
+            "Будет неожиданный приятный сюрприз.",
+            "Удача улыбнётся совсем скоро.",
+            "Ты получишь важную новость.",
+            "Самое лучшее впереди!",
+            "Жди приятной встречи сегодня.",
+            "День будет наполнен радостью.",
+            "Твоя мечта скоро сбудется.",
+            "Сегодня идеальный день для начинаний.",
+            "Улыбнись - и весь мир улыбнётся в ответ!",
+            "Финансовая удача на твоей стороне.",
+            "Впереди ждёт маленькое чудо.",
+            "Твоё желание скоро исполнится.",
+            "Сегодняшний день принесёт много счастья.",
+            "Удача следует за тобой по пятам."
+        ];
+
+        // Элементы DOM
+        const cookieContainer = document.getElementById('cookieContainer');
+        const fortunePaper = document.getElementById('fortunePaper');
+        const fortuneText = document.getElementById('fortuneText');
+        const restartBtn = document.getElementById('restartBtn');
+        const crumbsContainer = document.getElementById('crumbs');
+
+        let isOpened = false;
+
+        // Изначально добавляем пульсацию для привлечения внимания
+        cookieContainer.classList.add('pulse');
+
+        // Функция открытия печеньки
+        function openCookie() {
+            if (isOpened) return;
+            isOpened = true;
+            
+            // Убираем пульсацию
+            cookieContainer.classList.remove('pulse');
+            
+            // Отмечаем что печенька открыта
+            cookieContainer.classList.add('opened');
+            
+            // Получаем случайное предсказание
+            const randomFortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+            fortuneText.textContent = randomFortune;
+            
+            // Создаем крошки
+            createCrumbs();
+            
+            // Воспроизводим звук хруста
+            playCrackSound();
+            
+            // Показываем кнопку "Еще раз"
+            setTimeout(() => {
+                restartBtn.classList.add('show');
+            }, 1500);
+        }
+
+        // Функция создания крошек
+        function createCrumbs() {
+            // Создаем 12 крошек
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    const crumb = document.createElement('div');
+                    crumb.className = 'crumb';
+                    
+                    // Размер крошки
+                    const size = 5 + Math.random() * 10;
+                    crumb.style.width = `${size}px`;
+                    crumb.style.height = `${size}px`;
+                    
+                    // Начальная позиция (в центре печеньки)
+                    const startX = 100 + (Math.random() * 20 - 10);
+                    const startY = 100 + (Math.random() * 20 - 10);
+                    crumb.style.left = `${startX}px`;
+                    crumb.style.top = `${startY}px`;
+                    
+                    // Случайное направление полета
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = 80 + Math.random() * 80;
+                    const tx = Math.cos(angle) * distance;
+                    const ty = Math.sin(angle) * distance;
+                    
+                    crumb.style.setProperty('--tx', `${tx}px`);
+                    crumb.style.setProperty('--ty', `${ty}px`);
+                    
+                    // Случайная задержка для каждой крошки
+                    crumb.style.animationDelay = `${i * 0.1}s`;
+                    
+                    crumbsContainer.appendChild(crumb);
+                    
+                    // Удаляем крошку после анимации
+                    setTimeout(() => {
+                        if (crumb.parentNode) {
+                            crumb.remove();
+                        }
+                    }, 1500);
+                }, i * 100);
+            }
+        }
+
+        // Функция воспроизведения звука хруста
+        function playCrackSound() {
+            try {
+                // Используем Web Audio API для звука хруста
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Создаем несколько осцилляторов для реалистичного звука
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        // Случайная частота для разнообразия
+                        const freq = 300 + Math.random() * 500;
+                        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                        oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.3);
+                        
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                        
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.3);
+                    }, i * 50);
+                }
+            } catch (e) {
+                // Если Web Audio API не поддерживается, просто игнорируем
+                console.log("Звук не поддерживается в этом браузере");
+            }
+        }
+
+        // Функция сброса и открытия новой печеньки
+        function resetCookie() {
+            // Сбрасываем состояние
+            isOpened = false;
+            
+            // Убираем класс opened
+            cookieContainer.classList.remove('opened');
+            
+            // Очищаем предсказание
+            fortuneText.textContent = '';
+            
+            // Очищаем крошки
+            crumbsContainer.innerHTML = '';
+            
+            // Скрываем кнопку
+            restartBtn.classList.remove('show');
+            
+            // Добавляем пульсацию обратно
+            setTimeout(() => {
+                cookieContainer.classList.add('pulse');
+            }, 500);
+        }
+
+        // Обработчики событий
+        cookieContainer.addEventListener('click', openCookie);
+        restartBtn.addEventListener('click', resetCookie);
+
+        // Для мобильных устройств - добавляем touch события
+        cookieContainer.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            openCookie();
+        });
+
+        // Подсказка при загрузке
+        setTimeout(() => {
+            document.querySelector('.instruction').textContent = "Нажми на печеньку, чтобы открыть её";
+        }, 1000);
+    </script>
+</body>
+</html>
